@@ -1,14 +1,13 @@
 
 import './App.css';
 import React, { useState, useEffect } from 'react'
-import { ProgressBar } from 'react-bootstrap'
 
 function App() {
 
   const [l, setl] = useState(0);
   const [columnArray, setColumnArray] = useState([]);
-  const [numberOfColumns,setNumberColumns]=useState(10);
-
+  const [numberOfColumns, setNumberColumns] = useState(10);
+  const [tempNum,setTempNum]=useState(10);
 
   useEffect(() => {
     var k = 0;
@@ -17,25 +16,31 @@ function App() {
       k++;
       setl(k);
     }
-
     setTimeout(() => altceva(), 1000);
   }, [l])
 
   useEffect(() => {
-    function GetArray() {
-      const array = [];
-      for (let i = 0; i < numberOfColumns; i++) {
-        array.push(randomIntBetween(1, 100))
-      }
-      setColumnArray(array);
+    const array = [];
+    for (let i = 0; i < numberOfColumns; i++) {
+      array.push(randomIntBetween(1, 100))
     }
-    function handleSubmit(e){
-      e.preventDefault();
+    setColumnArray(array);
+
+    console.log('number of columns'+ numberOfColumns)
+  }, [numberOfColumns])
+   
+
+  function onClick(e) {
+    e.preventDefault();
+    setNumberColumns(tempNum); 
+  }
+  function getArray(){
+    const array = [];
+    for (let i = 0; i < numberOfColumns; i++) {
+      array.push(randomIntBetween(1, 100))
     }
-
-    setTimeout(() => GetArray(), 5000);
-  }, [columnArray,numberOfColumns])
-
+    setColumnArray(array);
+  }
 
   function randomIntBetween(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
@@ -44,18 +49,19 @@ function App() {
 
   return (
     <div className="App">
-      <div >ceva</div>
-      <div className='form-control'>
-          <label>Number of columns</label>
-          <input type="text" id="lastName" name="lastName"
-            value={numberOfColumns} onChange={(e) => setNumberColumns(e.target.value)} />
-        </div>
-        <button id="saveContact" type="submit" >Save</button>
-      hello world <div className='arrayBar'>{l}</div>
-      <p></p>
+      hello world <div className='arrayBar'>{l}</div> <p/>
+
+      <form className='form-control' >
+        <label>Set number of columns</label>
+        <input type="text" id="numberOfColumns"  value={tempNum} onChange={(e)=>setTempNum(e.target.value)} />
+        <button id="numberOfColumnsButton" type="submit" onClick={onClick}  >Set</button>
+      </form>
+     
+     <button onClick={getArray}>Reset values</button> <p/>
+
       <div className='arrayBarContainer'>
-        {columnArray.map( value => (
-        <div className="arrayBar" style={{height:`${value*0.8}vh`,width:`${85/numberOfColumns}%`,margin:`0 ${14.8/numberOfColumns}% 0 0`} }></div>))}
+        {columnArray.map(value => (
+          <div className="arrayBar" style={{ height: `${value * 0.8}vh`, width: `${85 / numberOfColumns}%`, margin: `0 0 0 ${14.8 / numberOfColumns}%` }}></div>))}
       </div>
     </div>
 
