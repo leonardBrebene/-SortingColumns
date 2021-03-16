@@ -9,7 +9,8 @@ function App() {
   const [columnArray, setColumnArray] = useState([]);
   const [numberOfColumns, setNumberColumns] = useState(10);
   const [tempNum, setTempNum] = useState(10);
-  const [helpIndex, setHelpIndex] = useState(-2);
+  const [helpIndexBubble, setHelpIndexBubble] = useState(-2);
+  const [helpIndexQuick,setHelpIndexQuick]=useState({num1:-2,num2:-2,color:'red'});
   const lastIndex = useRef(-1);
 
   useEffect(() => {
@@ -25,25 +26,26 @@ function App() {
 
 
   useEffect(() => {
+    console.log("useEffectul dee bubble")
     let array = columnArray;
+   
+    let k = array[helpIndexBubble];
+    array[helpIndexBubble] = array[helpIndexBubble + 1];
+    array[helpIndexBubble + 1] = k;
 
-    let k = array[helpIndex];
-    array[helpIndex] = array[helpIndex + 1];
-    array[helpIndex + 1] = k;
-    
-    
     if (lastIndex.current > -1) {
       var altceva = document.getElementById(lastIndex.current);
       altceva.style.backgroundColor = 'blue';
     }
 
-    if (helpIndex >= 0) {
-      const ceva = document.getElementById(helpIndex );
+    if (helpIndexBubble >= 0) {
+      const ceva = document.getElementById(helpIndexBubble);
       ceva.style.backgroundColor = 'red';
     }
-    lastIndex.current = helpIndex
+    lastIndex.current = helpIndexBubble;
+  
 
-  }, [helpIndex, columnArray])
+  }, [helpIndexBubble, columnArray])
 
   function Bubble(e) {
     e.preventDefault();
@@ -52,7 +54,7 @@ function App() {
       columnarray[i] = columnArray[i];
     }
     let z = -1;
-    
+
 
     for (let i = numberOfColumns; i > -1; i--) {
       for (let j = 0; j < i; j++) {
@@ -62,24 +64,101 @@ function App() {
           columnarray[j] = columnarray[j + 1];
           columnarray[j + 1] = k;
           z++;
-          
-          looper(j,z);
+
+          looper(j, z);
         }
         if (i === 1) {
-          looper(-2,z)
+          looper(-2, z)
         }
       }
-
     }
-
   }
 
-  function looper( j, z) {
+  function looper(j, z) {
     setTimeout(() => {
-      setHelpIndex(j);
+      setHelpIndexBubble(j);
     }, 10 * z);
   }
 
+useEffect(()=>{
+  let array = columnArray;
+  let k = array[helpIndexQuick['num1']];
+  array[helpIndexQuick['num1']] = array[helpIndexQuick['num2']];
+  array[helpIndexQuick['num2']] = k;
+
+   if (lastIndex.current > -1) {
+    var altceva = document.getElementById(lastIndex.current);
+     altceva.style.backgroundColor = 'blue';
+   }
+
+  if (helpIndexQuick['num1'] >= 0) {
+    const ceva = document.getElementById(helpIndexQuick['num1']);
+    const ceva1 = document.getElementById(helpIndexQuick['num2']);
+    ceva.style.backgroundColor = helpIndexQuick['color']; 
+    
+  }
+  if(helpIndexQuick['color']==='pink' )
+  lastIndex.current = helpIndexQuick['num1']
+
+},[helpIndexQuick,columnArray])
+
+function looperquick(first,second, z,bool) {
+  setTimeout(() => {
+    let color='pink'
+    if(bool===true){
+       color="rgb(5, 5, 201)"
+    }
+    setHelpIndexQuick({num1:first,num2:second,color:color});
+    
+  }, 100 * z);
+}
+
+  function quickSort(e) {
+    e.preventDefault();
+    let z=-1;
+    let columnarray = [];
+    for (let i = 0; i < numberOfColumns; i++) {
+      columnarray[i] = columnArray[i];
+    }
+
+    quickSort1(columnarray, 0, columnArray.length-1)
+   
+    function quickSort1(array, start, end) {
+      if (start >= end) {
+        return;
+      }
+
+      let index = partition(array, start, end);
+      quickSort1(array, start, index - 1);
+      quickSort1(array, index + 1, end);
+
+      function partition(array, start, end) {
+        
+        let pivotIndex = start;
+        let pivotValue = array[end];
+        for (let i = start; i < end; i++) {
+          if (array[i] < pivotValue) {
+            swap(array, pivotIndex, i,false);
+            pivotIndex++;
+          }
+        }
+        swap(array,pivotIndex, end,true)
+        return pivotIndex
+      }
+
+      function swap(array, first, second,bool) {
+        let k = array[first];
+        array[first] = array[second];
+        array[second] = k;
+        z++;
+        looperquick(first,second,z,bool)
+      }
+
+
+    }
+    // console.log("columnarray"+columnarray);
+    // setColumnArray(columnarray);
+  }
 
   function setNumberOfColumns(e) {
     e.preventDefault();
@@ -111,6 +190,7 @@ function App() {
 
       <button onClick={getArray}>Reset values</button >
       <button onClick={Bubble}>Bubble </button>
+      <button onClick={quickSort}>quickSort </button>
       <div className='arrayBarContainer'>
         {columnArray.map((value, index, colo) => (
           <div className="arrayBar"
