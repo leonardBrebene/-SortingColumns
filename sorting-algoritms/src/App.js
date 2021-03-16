@@ -2,17 +2,15 @@
 import './App.css';
 import React, { useState, useEffect, useRef } from 'react'
 
+
 function App() {
   //const [stop, setStop] = useState(true);
   const [l, setl] = useState(0);
   const [columnArray, setColumnArray] = useState([]);
-  const [color, setColor] = useState('blue');
   const [numberOfColumns, setNumberColumns] = useState(10);
   const [tempNum, setTempNum] = useState(10);
-
-  // var column3 = [];
-  // const columnArrayRef = useRef(columnArray);
-  //  columnArrayRef.current = columnArray;
+  const [helpIndex, setHelpIndex] = useState(-2);
+  const lastIndex = useRef(-1);
 
   useEffect(() => {
     const array = [];
@@ -24,76 +22,66 @@ function App() {
     console.log('number of columns' + numberOfColumns)
   }, [numberOfColumns])
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setl(l+1)
-  //   }, 1000);
-  //   return () => {
-  //     clearTimeout(timer);
-  //   };
-  // }, [l])
-
-useEffect(()=>{
-
-//console.log('a fost apelat useeffect')
-},[columnArray])
 
 
+  useEffect(() => {
+    let array = columnArray;
 
+    let k = array[helpIndex];
+    array[helpIndex] = array[helpIndex + 1];
+    array[helpIndex + 1] = k;
+    
+    
+    if (lastIndex.current > -1) {
+      var altceva = document.getElementById(lastIndex.current);
+      altceva.style.backgroundColor = 'blue';
+    }
 
- 
+    if (helpIndex >= 0) {
+      const ceva = document.getElementById(helpIndex );
+      ceva.style.backgroundColor = 'red';
+    }
+    lastIndex.current = helpIndex
 
-  function Bubble2(e) {
+  }, [helpIndex, columnArray])
+
+  function Bubble(e) {
     e.preventDefault();
-    let columnarray = columnArray;
+    let columnarray = [];
+    for (let i = 0; i < numberOfColumns; i++) {
+      columnarray[i] = columnArray[i];
+    }
     let z = -1;
-    let saved;
+    
 
     for (let i = numberOfColumns; i > -1; i--) {
       for (let j = 0; j < i; j++) {
-        
+
         if (columnarray[j] > columnarray[j + 1]) {
           let k = columnarray[j];
           columnarray[j] = columnarray[j + 1];
           columnarray[j + 1] = k;
-
           z++;
-          let clonedArray=[];
-          for (let i = 0; i < numberOfColumns; i++) {
-            clonedArray[i] = columnarray[i];
-          }
-          looper(clonedArray, z,j,saved);
-          saved=j+1;
+          
+          looper(j,z);
         }
-        if(i===1){
-          looper(columnArray,z,-2,saved)
+        if (i === 1) {
+          looper(-2,z)
         }
       }
 
     }
-   
+
   }
 
-  function looper(c, z,j,saved) {
+  function looper( j, z) {
     setTimeout(() => {
-      setColumnArray(c);
-      
-      if(saved){
-       var altceva=document.getElementById(saved);
-        altceva.style.backgroundColor='blue';
-      }
-       if(j>=0){
-        const ceva=document.getElementById(j+1);
-       ceva.style.backgroundColor='red'
-       }
-       
-       
-      
-    }, 5 * z);
+      setHelpIndex(j);
+    }, 10 * z);
   }
 
 
-  function onClick(e) {
+  function setNumberOfColumns(e) {
     e.preventDefault();
     setNumberColumns(tempNum);
   }
@@ -118,20 +106,18 @@ useEffect(()=>{
       <form className='form-control' >
         <label>Set number of columns</label>
         <input type="text" id="numberOfColumns" value={tempNum} onChange={(e) => setTempNum(e.target.value)} />
-        <button id="numberOfColumnsButton" type="submit" onClick={onClick}  >Set</button>
+        <button id="numberOfColumnsButton" type="submit" onClick={setNumberOfColumns}  >Set</button>
       </form>
 
       <button onClick={getArray}>Reset values</button >
-      {/* <button onClick={stopper}>Use Effect</button> <p /> */}
-      {/* <button onClick={Bubble}>Bubble </button>  */}
-      <button onClick={Bubble2}>Bubble2 </button>
+      <button onClick={Bubble}>Bubble </button>
       <div className='arrayBarContainer'>
-        {columnArray.map((value, index,colo) => (
+        {columnArray.map((value, index, colo) => (
           <div className="arrayBar"
-           key={index} id={index} 
+            key={index} id={index}
             style={{
               height: `${value * 0.8}vh`, width: `${85 / numberOfColumns}%`,
-              margin: `0 0 0 ${14.8 / numberOfColumns}%`,backgroundColor:`${color}`
+              margin: `0 0 0 ${14.8 / numberOfColumns}%`
             }}>
           </div>))}
 
