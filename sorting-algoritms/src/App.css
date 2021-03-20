@@ -1,12 +1,13 @@
 
 .arrayBarContainer{
   
-  position:absolute;
+  position:relative;
   border-color: black;
   border-style: solid;
   border-width: 0px 0px 10px 0px;
   bottom: 0cm;
   width: 100%;
+ 
 }
 
 .arrayBar{

@@ -1,17 +1,19 @@
 
 import './App.css';
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react';
+
 
 
 function App() {
-  //const [stop, setStop] = useState(true);
+
+
   const [l, setl] = useState(0);
   const [columnArray, setColumnArray] = useState([]);
   const [numberOfColumns, setNumberColumns] = useState(10);
   const [tempNum, setTempNum] = useState(10);
-  const [helpIndexBubble, setHelpIndexBubble] = useState(-2);
-  const [helpIndexQuick,setHelpIndexQuick]=useState({num1:-2,num2:-2,color:'red'});
-  const lastIndex = useRef(-1);
+  const [helpIndex, setHelpIndex] = useState({ num1: -2, num2: -2, color: 'red' });
+  const lastIndex = useRef({ num1: -2, num2: -2, color: 'blue' });
+  const pivotIndex=useRef(-2);
 
   useEffect(() => {
     const array = [];
@@ -23,38 +25,54 @@ function App() {
     console.log('number of columns' + numberOfColumns)
   }, [numberOfColumns])
 
-
-
   useEffect(() => {
-    console.log("useEffectul dee bubble")
     let array = columnArray;
-   
-    let k = array[helpIndexBubble];
-    array[helpIndexBubble] = array[helpIndexBubble + 1];
-    array[helpIndexBubble + 1] = k;
+    let k = array[helpIndex['num1']];
+    array[helpIndex['num1']] = array[helpIndex['num2']];
+    array[helpIndex['num2']] = k;
 
-    if (lastIndex.current > -1) {
-      var altceva = document.getElementById(lastIndex.current);
-      altceva.style.backgroundColor = 'blue';
+    if (helpIndex['color'] === 'black'&& pivotIndex.current>=0){
+      const eraser = document.getElementById(pivotIndex.current);
+      eraser.style.backgroundColor = 'blue'; 
     }
 
-    if (helpIndexBubble >= 0) {
-      const ceva = document.getElementById(helpIndexBubble);
-      ceva.style.backgroundColor = 'red';
+    if (lastIndex.current.num1 >= 0) {
+      const eraser = document.getElementById(lastIndex.current.num1);
+      const eraser2 = document.getElementById(lastIndex.current.num2);
+      eraser.style.backgroundColor = 'blue';
+      eraser2.style.backgroundColor = 'blue';
     }
-    lastIndex.current = helpIndexBubble;
-  
 
-  }, [helpIndexBubble, columnArray])
+    if (helpIndex['num1'] >= 0) {
+      const first = document.getElementById(helpIndex['num1']);
+      const second = document.getElementById(helpIndex['num2']);
+      first.style.backgroundColor = helpIndex['color'];
+      second.style.backgroundColor = helpIndex['pink'];
+
+    }
+    if (helpIndex['color'] === 'pink')
+      lastIndex.current = helpIndex;
+    if (helpIndex['color'] === 'black')
+      pivotIndex.current = helpIndex['num1'];
+
+  }, [helpIndex, columnArray])
+
+
+  function looper(z, first, second, bool) {
+    setTimeout(() => {
+      let color = 'pink'
+      if (bool === true) {
+        color = "black"
+      }
+      setHelpIndex({ num1: first, num2: second, color: color });
+
+    }, 100 * z);
+  }
 
   function Bubble(e) {
     e.preventDefault();
-    let columnarray = [];
-    for (let i = 0; i < numberOfColumns; i++) {
-      columnarray[i] = columnArray[i];
-    }
+    let columnarray = JSON.parse(JSON.stringify(columnArray));
     let z = -1;
-
 
     for (let i = numberOfColumns; i > -1; i--) {
       for (let j = 0; j < i; j++) {
@@ -65,64 +83,22 @@ function App() {
           columnarray[j + 1] = k;
           z++;
 
-          looper(j, z);
+          looper(z, j, j + 1, false);
         }
         if (i === 1) {
-          looper(-2, z)
+          looper(z, -2, -2, false)
         }
       }
     }
   }
 
-  function looper(j, z) {
-    setTimeout(() => {
-      setHelpIndexBubble(j);
-    }, 10 * z);
-  }
-
-useEffect(()=>{
-  let array = columnArray;
-  let k = array[helpIndexQuick['num1']];
-  array[helpIndexQuick['num1']] = array[helpIndexQuick['num2']];
-  array[helpIndexQuick['num2']] = k;
-
-   if (lastIndex.current > -1) {
-    var altceva = document.getElementById(lastIndex.current);
-     altceva.style.backgroundColor = 'blue';
-   }
-
-  if (helpIndexQuick['num1'] >= 0) {
-    const ceva = document.getElementById(helpIndexQuick['num1']);
-    const ceva1 = document.getElementById(helpIndexQuick['num2']);
-    ceva.style.backgroundColor = helpIndexQuick['color']; 
-    
-  }
-  if(helpIndexQuick['color']==='pink' )
-  lastIndex.current = helpIndexQuick['num1']
-
-},[helpIndexQuick,columnArray])
-
-function looperquick(first,second, z,bool) {
-  setTimeout(() => {
-    let color='pink'
-    if(bool===true){
-       color="rgb(5, 5, 201)"
-    }
-    setHelpIndexQuick({num1:first,num2:second,color:color});
-    
-  }, 100 * z);
-}
-
   function quickSort(e) {
     e.preventDefault();
-    let z=-1;
-    let columnarray = [];
-    for (let i = 0; i < numberOfColumns; i++) {
-      columnarray[i] = columnArray[i];
-    }
+    let z = -1;
+    let columnarray = JSON.parse(JSON.stringify(columnArray));
 
-    quickSort1(columnarray, 0, columnArray.length-1)
-   
+    quickSort1(columnarray, 0, columnArray.length - 1)
+
     function quickSort1(array, start, end) {
       if (start >= end) {
         return;
@@ -133,31 +109,26 @@ function looperquick(first,second, z,bool) {
       quickSort1(array, index + 1, end);
 
       function partition(array, start, end) {
-        
         let pivotIndex = start;
         let pivotValue = array[end];
         for (let i = start; i < end; i++) {
           if (array[i] < pivotValue) {
-            swap(array, pivotIndex, i,false);
+            swap(array, pivotIndex, i, false);
             pivotIndex++;
           }
         }
-        swap(array,pivotIndex, end,true)
+        swap(array, pivotIndex, end, true)
         return pivotIndex
       }
 
-      function swap(array, first, second,bool) {
+      function swap(array, first, second, bool) {
         let k = array[first];
         array[first] = array[second];
         array[second] = k;
         z++;
-        looperquick(first,second,z,bool)
+        looper(z, first, second, bool)
       }
-
-
     }
-    // console.log("columnarray"+columnarray);
-    // setColumnArray(columnarray);
   }
 
   function setNumberOfColumns(e) {
@@ -171,6 +142,7 @@ function looperquick(first,second, z,bool) {
       array.push(randomIntBetween(1, 100))
     }
     setColumnArray(array);
+    
   }
 
   function randomIntBetween(min, max) {
@@ -178,21 +150,26 @@ function looperquick(first,second, z,bool) {
   }
   //Math.floor used to parse numbers to integer
 
+
+
+
+
   return (
     <div className="App">
-      hello world <div className='arrayBar'>{l} </div>  <p />
+      hello world <div className='arrayBar'>{l} {columnArray.length - 1}</div>  <p />
 
+      <button onClick={getArray}>Reset values</button >
       <form className='form-control' >
         <label>Set number of columns</label>
         <input type="text" id="numberOfColumns" value={tempNum} onChange={(e) => setTempNum(e.target.value)} />
         <button id="numberOfColumnsButton" type="submit" onClick={setNumberOfColumns}  >Set</button>
       </form>
 
-      <button onClick={getArray}>Reset values</button >
-      <button onClick={Bubble}>Bubble </button>
-      <button onClick={quickSort}>quickSort </button>
+      <button onClick={Bubble}>Bubblesor </button>
+      <button onClick={quickSort}>quickSort </button><br></br>
+
       <div className='arrayBarContainer'>
-        {columnArray.map((value, index, colo) => (
+        {columnArray.map((value, index) => (
           <div className="arrayBar"
             key={index} id={index}
             style={{
@@ -200,8 +177,9 @@ function looperquick(first,second, z,bool) {
               margin: `0 0 0 ${14.8 / numberOfColumns}%`
             }}>
           </div>))}
-
       </div>
+
+
     </div>
 
   );
