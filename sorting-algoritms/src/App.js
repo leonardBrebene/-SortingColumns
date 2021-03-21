@@ -9,11 +9,11 @@ function App() {
 
   const [l, setl] = useState(0);
   const [columnArray, setColumnArray] = useState([]);
-  const [numberOfColumns, setNumberColumns] = useState(10);
-  const [tempNum, setTempNum] = useState(10);
+  const [numberOfColumns, setNumberColumns] = useState(50);
+  const [tempNum, setTempNum] = useState(50);
   const [helpIndex, setHelpIndex] = useState({ num1: -2, num2: -2, color: 'red' });
   const lastIndex = useRef({ num1: -2, num2: -2, color: 'blue' });
-  const pivotIndex=useRef(-2);
+  const pivotIndex = useRef(-2);
 
   useEffect(() => {
     const array = [];
@@ -21,22 +21,30 @@ function App() {
       array.push(randomIntBetween(1, 100))
     }
     setColumnArray(array);
+    
 
     console.log('number of columns' + numberOfColumns)
+    setHelpIndex({ num1: -2, num2: -2, color: 'blue' })
+    lastIndex.current = { num1: -2, num2: -2, color: 'blue' };
+    pivotIndex.current = -2
   }, [numberOfColumns])
 
   useEffect(() => {
+    // console.log("in useEffet " + helpIndex['num1'] + ' ' + helpIndex['num2'])
+    // console.log('lastindex'+lastIndex.current.num1+' '+lastIndex.current.num2+' '+lastIndex.current.color)
+    // console.log('pivotindex'+pivotIndex.current)
+
     let array = columnArray;
     let k = array[helpIndex['num1']];
     array[helpIndex['num1']] = array[helpIndex['num2']];
     array[helpIndex['num2']] = k;
 
-    if (helpIndex['color'] === 'black'&& pivotIndex.current>=0){
+    if (helpIndex['color'] === 'black' && pivotIndex.current >= 0) {
       const eraser = document.getElementById(pivotIndex.current);
-      eraser.style.backgroundColor = 'blue'; 
+      eraser.style.backgroundColor = 'blue';
     }
 
-    if (lastIndex.current.num1 >= 0) {
+    if (lastIndex.current.num2 >= 0) {
       const eraser = document.getElementById(lastIndex.current.num1);
       const eraser2 = document.getElementById(lastIndex.current.num2);
       eraser.style.backgroundColor = 'blue';
@@ -47,13 +55,15 @@ function App() {
       const first = document.getElementById(helpIndex['num1']);
       const second = document.getElementById(helpIndex['num2']);
       first.style.backgroundColor = helpIndex['color'];
-      second.style.backgroundColor = helpIndex['pink'];
-
+      second.style.backgroundColor = 'pink';
+      console.log(helpIndex['num1'], helpIndex['num2'], helpIndex['color'])
     }
     if (helpIndex['color'] === 'pink')
       lastIndex.current = helpIndex;
-    if (helpIndex['color'] === 'black')
+    if (helpIndex['color'] === 'black') {
       pivotIndex.current = helpIndex['num1'];
+      lastIndex.current = { num1: 0, num2: helpIndex['num2'] };
+    }
 
   }, [helpIndex, columnArray])
 
@@ -66,7 +76,7 @@ function App() {
       }
       setHelpIndex({ num1: first, num2: second, color: color });
 
-    }, 100 * z);
+    }, 25 * z);
   }
 
   function Bubble(e) {
@@ -97,7 +107,7 @@ function App() {
     let z = -1;
     let columnarray = JSON.parse(JSON.stringify(columnArray));
 
-    quickSort1(columnarray, 0, columnArray.length - 1)
+    quickSort1(columnarray, 0, columnarray.length - 1)
 
     function quickSort1(array, start, end) {
       if (start >= end) {
@@ -107,28 +117,32 @@ function App() {
       let index = partition(array, start, end);
       quickSort1(array, start, index - 1);
       quickSort1(array, index + 1, end);
-
-      function partition(array, start, end) {
-        let pivotIndex = start;
-        let pivotValue = array[end];
-        for (let i = start; i < end; i++) {
-          if (array[i] < pivotValue) {
-            swap(array, pivotIndex, i, false);
-            pivotIndex++;
-          }
-        }
-        swap(array, pivotIndex, end, true)
-        return pivotIndex
-      }
-
-      function swap(array, first, second, bool) {
-        let k = array[first];
-        array[first] = array[second];
-        array[second] = k;
-        z++;
-        looper(z, first, second, bool)
-      }
     }
+    if(z>0){
+      z++
+      looper(z,-2,-2,true)
+    }
+    function partition(array, start, end) {
+      let pivotIndex = start;
+      let pivotValue = array[end];
+      for (let i = start; i < end; i++) {
+        if (array[i] < pivotValue) {
+          swap(array, pivotIndex, i, false);
+          pivotIndex++;
+        }
+      }
+      swap(array, pivotIndex, end, true)
+      return pivotIndex
+    }
+
+    function swap(array, first, second, bool) {
+      let k = array[first];
+      array[first] = array[second];
+      array[second] = k;
+      z++;
+      looper(z, first, second, bool)
+    }
+    //}
   }
 
   function setNumberOfColumns(e) {
@@ -142,7 +156,7 @@ function App() {
       array.push(randomIntBetween(1, 100))
     }
     setColumnArray(array);
-    
+  
   }
 
   function randomIntBetween(min, max) {
