@@ -11,9 +11,10 @@ function App() {
   const [columnArray, setColumnArray] = useState([]);
   const [numberOfColumns, setNumberColumns] = useState(50);
   const [tempNum, setTempNum] = useState(50);
-  const [helpIndex, setHelpIndex] = useState({ num1: -2, num2: -2, color: 'red' });
-  const lastIndex = useRef({ num1: -2, num2: -2, color: 'blue' });
+  const [helpIndex, setHelpIndex] = useState({ num1: -2, num2: -2, color: 'red',start:-2,end:-2 });
+  const lastIndex = useRef({ num1: -2, num2: -2, color: 'blue',start:-2,end:-2 });
   const pivotIndex = useRef(-2);
+
 
   useEffect(() => {
     const array = [];
@@ -24,8 +25,8 @@ function App() {
     
 
     console.log('number of columns' + numberOfColumns)
-    setHelpIndex({ num1: -2, num2: -2, color: 'blue' })
-    lastIndex.current = { num1: -2, num2: -2, color: 'blue' };
+    setHelpIndex({ num1: -2, num2: -2, color: 'blue', start:-2 ,end:-2})
+    lastIndex.current = { num1: -2, num2: -2, color: 'blue',};
     pivotIndex.current = -2
   }, [numberOfColumns])
 
@@ -38,6 +39,21 @@ function App() {
     let k = array[helpIndex['num1']];
     array[helpIndex['num1']] = array[helpIndex['num2']];
     array[helpIndex['num2']] = k;
+    
+    // if(helpIndex['end']!==lastIndex.current['end']){
+    //   for(let i=lastIndex.current['start'];i<lastIndex.current['end'];i++){
+    //     const k=document.getElementById(i);
+    //     k.style.backgroundColor='blue'
+    //   }
+    // }
+
+    if(helpIndex['end']>0){
+     // console.log(helpIndex['start'],helpIndex['end'])
+      for(let i=helpIndex['start'];i<=helpIndex['end'];i++){
+        const k=document.getElementById(i);
+        k.style.backgroundColor='#0099ff'
+      }
+    }
 
     if (helpIndex['color'] === 'black' && pivotIndex.current >= 0) {
       const eraser = document.getElementById(pivotIndex.current);
@@ -56,27 +72,28 @@ function App() {
       const second = document.getElementById(helpIndex['num2']);
       first.style.backgroundColor = helpIndex['color'];
       second.style.backgroundColor = 'pink';
-      console.log(helpIndex['num1'], helpIndex['num2'], helpIndex['color'])
+      //console.log(helpIndex['num1'], helpIndex['num2'], helpIndex['color'])
     }
-    if (helpIndex['color'] === 'pink')
-      lastIndex.current = helpIndex;
+   
+    lastIndex.current = helpIndex;
+   // console.log(lastIndex.current['end'], helpIndex['end'])
     if (helpIndex['color'] === 'black') {
       pivotIndex.current = helpIndex['num1'];
-      lastIndex.current = { num1: 0, num2: helpIndex['num2'] };
+      lastIndex.current.num1=0
     }
 
   }, [helpIndex, columnArray])
 
 
-  function looper(z, first, second, bool) {
+  function looper(z, first, second, bool,start,end) {
     setTimeout(() => {
       let color = 'pink'
       if (bool === true) {
         color = "black"
       }
-      setHelpIndex({ num1: first, num2: second, color: color });
+      setHelpIndex({ num1: first, num2: second, color: color,start:start,end:end });
 
-    }, 25 * z);
+    }, 10 * z);
   }
 
   function Bubble(e) {
@@ -123,9 +140,13 @@ function App() {
       looper(z,-2,-2,true)
     }
     function partition(array, start, end) {
+      z++;
+      looper(z,-2,-2,'pink',start, end)
       let pivotIndex = start;
       let pivotValue = array[end];
       for (let i = start; i < end; i++) {
+        z++;
+        looper(z,i,i,false)
         if (array[i] < pivotValue) {
           swap(array, pivotIndex, i, false);
           pivotIndex++;
@@ -155,6 +176,7 @@ function App() {
     for (let i = 0; i < numberOfColumns; i++) {
       array.push(randomIntBetween(1, 100))
     }
+    setHelpIndex({ num1: -2, num2: -2, color: 'blue', start:-2 ,end:-2})
     setColumnArray(array);
   
   }
@@ -163,10 +185,6 @@ function App() {
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
   //Math.floor used to parse numbers to integer
-
-
-
-
 
   return (
     <div className="App">
