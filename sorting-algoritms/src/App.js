@@ -6,8 +6,8 @@ function App() {
 
   const [l, setl] = useState(0);
   const [columnArray, setColumnArray] = useState([]);
-  const [numberOfColumns, setNumberColumns] = useState(10);
-  const [tempNum, setTempNum] = useState(10);
+  const [numberOfColumns, setNumberColumns] = useState(50);
+  const [tempNum, setTempNum] = useState(50);
   const [helpIndex, setHelpIndex] = useState({ num1: -2, num2: -2, color: 'turquoise',start:-2,end:-2,mergeValue:0 });
   const lastIndex = useRef({ num1: -2, num2: -2, color: 'blue',start:-2,end:-2 });
   const pivotIndex = useRef(-2);
@@ -25,6 +25,7 @@ function App() {
     setHelpIndex({ num1: -2, num2: -2, color: 'blue', start:-2 ,end:-2})
     lastIndex.current = { num1: -2, num2: -2, color: 'blue',};
     pivotIndex.current = -2
+    
   }, [numberOfColumns])
 
   useEffect(() => {
@@ -38,7 +39,6 @@ function App() {
       array[helpIndex['num2']] = k; 
     }
       
-
     if(helpIndex['end']>0){  //color the working array dodgerblue
       for(let i=helpIndex['start'];i<=helpIndex['end'];i++){
         const k=document.getElementById(i);
@@ -81,9 +81,10 @@ function App() {
       if (bool === true) {
         color = "black"
       }
+    
       setHelpIndex({ num1: first, num2: second, color: color,start:start,end:end,mergeValue:mergeIndex });
-
-    }, 20 * z);
+     
+    }, 10 * z);
   }
 
   function Bubble(e) {
@@ -161,18 +162,13 @@ function App() {
 
   function mergesort(e){
     e.preventDefault();
-    let z=-1;
     let columnarray=JSON.parse(JSON.stringify(columnArray));
-    let indexColumnArray= columnarray.map((value,index)=>{
-      return{index:index,value:value}
+    
+    let indexColumnArray= columnarray.map((value,i)=>{
+     return value={value:value,index:i}
     })
-    
-    console.log(indexColumnArray);
-    //console.log(indexColumnArray[0]['value'])
-    let ceva= mergeSortTopDown(indexColumnArray);
-    console.log(ceva);
-    
-      
+    mergeSortTopDown(indexColumnArray)
+
     function mergeSortTopDown(indexColumnArray){
       if(indexColumnArray.length<=1){
         return indexColumnArray;
@@ -188,6 +184,7 @@ function App() {
     function merge(left,right){
       let array=[];
       let smallestIndex=999;
+      let biggestIndex=-1;
 
       while(left.length && right.length){
         
@@ -199,30 +196,30 @@ function App() {
       }
       
       let test= array.concat(left.slice()).concat(right.slice());
-        test.forEach(element => {
-          if(element['index']<smallestIndex){
-          smallestIndex=element['index']
+      
+      test.forEach(element => {
+        if(element['index']<smallestIndex){
+        smallestIndex=element['index'];
+      }
+        if(element['index']>biggestIndex){
+          biggestIndex=element['index']
         }
-        });
+      });
+      
+      timer.current++;
+        looper(timer.current,smallestIndex,smallestIndex,false,smallestIndex,biggestIndex,-2);
         
-        test.forEach((element) => {
-          element['index']=smallestIndex;
-          smallestIndex++;
-        });
+      test.forEach((element) => {
+        element['index']=smallestIndex;
+        smallestIndex++;
+      });
 
-        test.forEach(element => {
-          timer.current++;
-          looper(timer.current,element['index'],element['index'],false,element['index'],smallestIndex,element['value']);
-        });
+      test.forEach(element => {
+        timer.current++;
+        looper(timer.current,element['index'],element['index'],false,smallestIndex,biggestIndex,element['value'],test);
+      });
        
-        //console.log('test dupaa');console.log(test);
-        
-        let k=array.length
-        let z=k-smallestIndex
-       // console.log('biggest index '+ smallestIndex+' minus '+z+' timer'+timer.current)
-
-       return test
-
+       return test;
     }
     
   }
@@ -239,6 +236,7 @@ function App() {
     }
     setHelpIndex({ num1: -2, num2: -2, color: 'blue', start:-2 ,end:-2})
     setColumnArray(array);
+    timer.current=0
   
   }
 
