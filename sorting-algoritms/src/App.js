@@ -8,9 +8,9 @@ function App() {
   const [columnArray, setColumnArray] = useState([]);
   const [numberOfColumns, setNumberColumns] = useState(50);
   const [tempNum, setTempNum] = useState(50);
-  const [helpIndex, setHelpIndex] = useState({ num1: -2, num2: -2, color: 'turquoise',start:-2,end:-2,mergeValue:0 });
-  const lastIndex = useRef({ num1: -2, num2: -2, color: 'blue',start:-2,end:-2 });
-  const pivotIndex = useRef(-2);
+  const [helpIndex, setHelpIndex] = useState({ num1: -1, num2: -1, color: 'turquoise', start: -1, end: -1, mergeValue: 0 });
+  const lastIndex = useRef({ num1: -1, num2: -1, color: 'blue', start: -1, end: -1 });
+  const pivotIndex = useRef(-1);
   const timer = useRef(-1);
 
 
@@ -21,11 +21,11 @@ function App() {
     }
     setColumnArray(array);
 
-    console.log('number of columns' + numberOfColumns)
-    setHelpIndex({ num1: -2, num2: -2, color: 'blue', start:-2 ,end:-2})
-    lastIndex.current = { num1: -2, num2: -2, color: 'blue',};
-    pivotIndex.current = -2
-    
+    setHelpIndex({ num1: -1, num2: -1, color: 'blue', start: -1, end: -1 })
+    lastIndex.current = { num1: -1, num2: -1, color: 'blue', };
+    pivotIndex.current = -1;
+    timer.current = -1
+
   }, [numberOfColumns])
 
   useEffect(() => {
@@ -33,16 +33,16 @@ function App() {
     let array = columnArray;   //swap elements of columnArray
     let k = array[helpIndex['num1']];
     array[helpIndex['num1']] = array[helpIndex['num2']];
-    if(helpIndex['mergeValue']>0){
-      array[helpIndex['num2']]=helpIndex['mergeValue'] 
-    }else{
-      array[helpIndex['num2']] = k; 
+    if (helpIndex['mergeValue'] > 0) {
+      array[helpIndex['num2']] = helpIndex['mergeValue'] //if this is called from mergeSort set value of column from mergevalue
+    } else {
+      array[helpIndex['num2']] = k; //if there is negative mergevalue swap elements 
     }
-      
-    if(helpIndex['end']>0){  //color the working array dodgerblue
-      for(let i=helpIndex['start'];i<=helpIndex['end'];i++){
-        const k=document.getElementById(i);
-        k.style.backgroundColor='dodgerblue'
+
+    if (helpIndex['end'] > 0) {  //color the working array dodgerblue
+      for (let i = helpIndex['start']; i <= helpIndex['end']; i++) {
+        const k = document.getElementById(i);
+        k.style.backgroundColor = 'dodgerblue'
       }
     }
 
@@ -64,33 +64,31 @@ function App() {
       first.style.backgroundColor = helpIndex['color'];
       second.style.backgroundColor = 'turquoise';
     }
-   
-    lastIndex.current = helpIndex;
- 
-    if (helpIndex['color'] === 'black') { //store the index of the pivot 
+
+    lastIndex.current = helpIndex; //store de helpIndex to recolor de swapping elements next time when function si called
+
+    if (helpIndex['color'] === 'black') { //store the index of the pivot so that it will be recolored next time
       pivotIndex.current = helpIndex['num1'];
-      lastIndex.current.num1=0
+      lastIndex.current.num1 = 0
     }
 
   }, [helpIndex, columnArray])
 
 
-  function looper(z, first, second, bool,start,end,mergeIndex) {
+  function looper(first, second, bool, start, end, mergeValue) {
     setTimeout(() => {
       let color = 'turquoise'
       if (bool === true) {
-        color = "black"
+        color = "black" //set the color of help index if bool=true then this is a pivot and color the pivot black
       }
-    
-      setHelpIndex({ num1: first, num2: second, color: color,start:start,end:end,mergeValue:mergeIndex });
-     
-    }, 10 * z);
+
+      setHelpIndex({ num1: first, num2: second, color: color, start: start, end: end, mergeValue: mergeValue });
+    }, 10 * timer.current);
   }
 
   function Bubble(e) {
     e.preventDefault();
     let columnarray = JSON.parse(JSON.stringify(columnArray));
-    let z = -1;
 
     for (let i = numberOfColumns; i > -1; i--) {
       for (let j = 0; j < i; j++) {
@@ -99,12 +97,12 @@ function App() {
           let k = columnarray[j];
           columnarray[j] = columnarray[j + 1];
           columnarray[j + 1] = k;
-          z++;
 
-          looper(z, j, j + 1, false);
+          timer.current++;
+          looper(j, j + 1, false);
         }
         if (i === 1) { //when it finishes the loop erase the color of las columns
-          looper(z, -2, -2, false)
+          looper(-1, -1, false)
         }
       }
     }
@@ -112,7 +110,6 @@ function App() {
 
   function quickSort(e) {
     e.preventDefault();
-    let z = -1;
     let columnarray = JSON.parse(JSON.stringify(columnArray));
 
     quickSort1(columnarray, 0, columnarray.length - 1)
@@ -127,20 +124,20 @@ function App() {
       quickSort1(array, index + 1, end);
     }
 
-    if(z>0){
-      z++
-      looper(z,-2,-2,true)
+    if (timer.current > 0) {
+      timer.current++
+      looper(-1, -1, true)
     }  //when everything finishes rerun loop to erase black and turquoise column
 
     function partition(array, start, end) {
-      z++;
-      looper(z,-2,-2,'turquoise',start, end) //set the partition array with dodgerblue
-      
+      timer.current++;
+      looper(-1, -1, 'turquoise', start, end) //set the partition array with dodgerblue
+
       let pivotIndex = start;
       let pivotValue = array[end];
       for (let i = start; i < end; i++) {
-        z++;
-        looper(z,i,i,false)
+        timer.current++;
+        looper(i, i, false)
         if (array[i] < pivotValue) {
           swap(array, pivotIndex, i, false);
           pivotIndex++;
@@ -154,74 +151,80 @@ function App() {
       let k = array[first];
       array[first] = array[second];
       array[second] = k;
-      z++;
-      looper(z, first, second, bool)
+
+      timer.current++;
+      looper(first, second, bool)
     }
-   
   }
 
-  function mergesort(e){
+  function mergesort(e) {
     e.preventDefault();
-    let columnarray=JSON.parse(JSON.stringify(columnArray));
-    
-    let indexColumnArray= columnarray.map((value,i)=>{
-     return value={value:value,index:i}
-    })
-    mergeSortTopDown(indexColumnArray)
+    let columnarray = JSON.parse(JSON.stringify(columnArray));
 
-    function mergeSortTopDown(indexColumnArray){
-      if(indexColumnArray.length<=1){
+    let indexColumnArray = columnarray.map((value, i) => {
+      return value = { value: value, index: i }
+    })
+
+    mergeSortTopDown(indexColumnArray) //call the function from below
+
+    function mergeSortTopDown(indexColumnArray) {
+      if (indexColumnArray.length <= 1) {
         return indexColumnArray;
       }
 
-      const middle=Math.floor(indexColumnArray.length/2);
-      const left =indexColumnArray.slice(0,middle);
-      const right=indexColumnArray.slice(middle)
-      
-      return merge(mergeSortTopDown(left),mergeSortTopDown(right));
-    } 
+      const middle = Math.floor(indexColumnArray.length / 2);
+      const left = indexColumnArray.slice(0, middle);
+      const right = indexColumnArray.slice(middle)
 
-    function merge(left,right){
-      let array=[];
-      let smallestIndex=999;
-      let biggestIndex=-1;
+      return merge(mergeSortTopDown(left), mergeSortTopDown(right));
+    }
 
-      while(left.length && right.length){
-        
-        if(left[0]['value']<right[0]['value']){
+    function merge(left, right) {
+      let array = [];
+      let smallestIndex = 999;
+      let biggestIndex = -1;
+
+      while (left.length && right.length) {
+
+        if (left[0]['value'] < right[0]['value']) {
           array.push(left.shift())
-        }else{
+        } else {
           array.push(right.shift())
         }
       }
-      
-      let test= array.concat(left.slice()).concat(right.slice());
-      
-      test.forEach(element => {
-        if(element['index']<smallestIndex){
-        smallestIndex=element['index'];
-      }
-        if(element['index']>biggestIndex){
-          biggestIndex=element['index']
+
+      array = array.concat(left.slice()).concat(right.slice()); //setting the array with sorted elements
+
+      array.forEach(element => {           //getting the smallest and the biggest index of the array 
+        if (element['index'] < smallestIndex) {
+          smallestIndex = element['index'];
+        }
+        if (element['index'] > biggestIndex) {
+          biggestIndex = element['index']
         }
       });
-      
+
       timer.current++;
-        looper(timer.current,smallestIndex,smallestIndex,false,smallestIndex,biggestIndex,-2);
-        
-      test.forEach((element) => {
-        element['index']=smallestIndex;
+      looper(smallestIndex, smallestIndex, false, smallestIndex, biggestIndex, -1);  //color the working array
+
+      array.forEach((element) => {   //resettig the index of the array according their values
+        element['index'] = smallestIndex;
         smallestIndex++;
       });
 
-      test.forEach(element => {
+      array.forEach(element => {
         timer.current++;
-        looper(timer.current,element['index'],element['index'],false,smallestIndex,biggestIndex,element['value'],test);
+        looper(element['index'], element['index'], false, smallestIndex, biggestIndex, element['value']);
+        
+        if(element['index']===numberOfColumns-1){ 
+          timer.current++;
+          looper(-1, -1, false, smallestIndex, biggestIndex, element['value']);  //call loop for the last time to color the last element blue 
+        }
       });
-       
-       return test;
+
+      return array;
     }
-    
+
   }
 
   function setNumberOfColumns(e) {
@@ -234,10 +237,9 @@ function App() {
     for (let i = 0; i < numberOfColumns; i++) {
       array.push(randomIntBetween(1, 100))
     }
-    setHelpIndex({ num1: -2, num2: -2, color: 'blue', start:-2 ,end:-2})
+    setHelpIndex({ num1: -1, num2: -1, color: 'blue', start: -1, end: -1 })
     setColumnArray(array);
-    timer.current=0
-  
+    timer.current = -1
   }
 
   function randomIntBetween(min, max) {
