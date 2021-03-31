@@ -1,10 +1,11 @@
 import './App.css';
 import React, { useState, useEffect, useRef } from 'react';
+import useSomething from './useSomething'
 
 
 function App() {
 
-  const [l, setl] = useState(0);
+  const [l, setl] = useSomething('firstvalue', '');
   const [columnArray, setColumnArray] = useState([]);
   const [numberOfColumns, setNumberColumns] = useState(50);
   const [tempNum, setTempNum] = useState(50);
@@ -83,7 +84,7 @@ function App() {
       }
 
       setHelpIndex({ num1: first, num2: second, color: color, start: start, end: end, mergeValue: mergeValue });
-    }, 10 * timer.current);
+    }, 500 * timer.current);
   }
 
   function Bubble(e) {
@@ -227,6 +228,59 @@ function App() {
 
   }
 
+  function heapSort(e){
+    console.log(e)
+    
+    e.preventDefault();
+    let array =JSON.parse(JSON.stringify(columnArray));
+    console.log(array.length)
+    heapsort(array);
+
+    function heapsort(array){
+      let size =array.length
+      
+      for (let i=Math.floor(size/2-1);i>=0;i--){
+        heapify(array,size,i)
+      }
+
+      for(let i=size-1; i>=0;i--){
+        timer.current++;
+        looper(0,i)
+
+        let temp=array[0];
+        array[0]=array[i];
+        array[i]=temp;
+
+        heapify(array,size, 0)
+      }
+    }
+
+    function heapify(array,size,i){
+      let max=i;
+      let left=2*i+1;
+      let right=2*i+2;
+
+      if (left<size&&array[left]>array[max])
+        max=left;
+
+      if(right<size&&array[right]>array[max])
+        max=right;
+
+      if(max!==i){
+        timer.current++;
+        looper(i,max)
+
+        let temp=array[i];
+        array[i]=array[max];
+        array[max]=temp
+
+        heapify(array, size,max)
+      }
+    }
+    
+
+  }
+
   function setNumberOfColumns(e) {
     e.preventDefault();
     setNumberColumns(tempNum);
@@ -249,7 +303,7 @@ function App() {
 
   return (
     <div className="App">
-      hello world <div className='arrayBar'>{l} {columnArray.length - 1}</div>  <p />
+      hello world <div className='arrayBar'> l este{l}<br></br> {columnArray.length - 1}</div>  <p />
 
       <button onClick={getArray}>Reset values</button >
       <form className='form-control' >
@@ -260,7 +314,9 @@ function App() {
 
       <button onClick={Bubble}>Bubblesor </button>
       <button onClick={quickSort}>quickSort </button>
-      <button onClick={mergesort}>mergesort </button><br></br>
+      <button onClick={mergesort}>mergesort </button>
+      <button onClick={heapSort}>heapSort</button>
+      <br></br>
 
       <div className='arrayBarContainer'>
         {columnArray.map((value, index) => (
