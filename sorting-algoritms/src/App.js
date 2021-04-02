@@ -15,6 +15,7 @@ function App() {
   const timer = useRef(-1);
 
 
+
   useEffect(() => {
     const array = [];
     for (let i = 0; i < numberOfColumns; i++) {
@@ -27,10 +28,10 @@ function App() {
     pivotIndex.current = -1;
     timer.current = -1
 
+
   }, [numberOfColumns])
 
   useEffect(() => {
-
     let array = columnArray;   //swap elements of columnArray
     let k = array[helpIndex['num1']];
     array[helpIndex['num1']] = array[helpIndex['num2']];
@@ -76,15 +77,22 @@ function App() {
   }, [helpIndex, columnArray])
 
 
-  function looper(first, second, bool, start, end, mergeValue) {
-    setTimeout(() => {
-      let color = 'turquoise'
-      if (bool === true) {
-        color = "black" //set the color of help index if bool=true then this is a pivot and color the pivot black
-      }
+  async function looper(first, second, bool, start, end, mergeValue) {
 
-      setHelpIndex({ num1: first, num2: second, color: color, start: start, end: end, mergeValue: mergeValue });
-    }, 500 * timer.current);
+    //setTimeout(() => {
+    await sleep(1000)
+    let color = 'turquoise'
+    if (bool === true) {
+      color = "black" //set the color of help index if bool=true then this is a pivot and color the pivot black
+    }
+
+    setHelpIndex({ num1: first, num2: second, color: color, start: start, end: end, mergeValue: mergeValue });
+    //}, 30 * timer.current);
+
+  }
+
+ async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   function Bubble(e) {
@@ -216,8 +224,8 @@ function App() {
       array.forEach(element => {
         timer.current++;
         looper(element['index'], element['index'], false, smallestIndex, biggestIndex, element['value']);
-        
-        if(element['index']===numberOfColumns-1){ 
+
+        if (element['index'] === numberOfColumns - 1) {
           timer.current++;
           looper(-1, -1, false, smallestIndex, biggestIndex, element['value']);  //call loop for the last time to color the last element blue 
         }
@@ -228,56 +236,61 @@ function App() {
 
   }
 
-  function heapSort(e){
+  function heapSort(e) {
     console.log(e)
-    
+
     e.preventDefault();
-    let array =JSON.parse(JSON.stringify(columnArray));
+    let array = JSON.parse(JSON.stringify(columnArray));
     console.log(array.length)
     heapsort(array);
+    console.log(array)
 
-    function heapsort(array){
-      let size =array.length
-      
-      for (let i=Math.floor(size/2-1);i>=0;i--){
-        heapify(array,size,i)
+    function heapsort(array) {
+      let size = array.length
+
+      for (let i = Math.floor(size / 2 - 1); i >= 0; i--) {
+        heapify(array, size, i)
       }
 
-      for(let i=size-1; i>=0;i--){
+      for (let i = size - 1; i >= 0; i--) {
         timer.current++;
-        looper(0,i)
+        looper(0, i)
 
-        let temp=array[0];
-        array[0]=array[i];
-        array[i]=temp;
+        let temp = array[0];
+        array[0] = array[i];
+        array[i] = temp;
+        //array.shift();
 
-        heapify(array,size, 0)
+        heapify(array, i, 0)
+      }
+
+      timer.current++;
+      looper(-1, -1);
+    }
+
+    function heapify(array, size, i) {
+      let max = i;
+      let left = 2 * i + 1;
+      let right = 2 * i + 2;
+
+      if (left < size && array[left] > array[max])
+        max = left;
+
+      if (right < size && array[right] > array[max])
+        max = right;
+
+      if (max !== i) {
+        timer.current++;
+        looper(i, max)
+
+        let temp = array[i];
+        array[i] = array[max];
+        array[max] = temp
+
+        heapify(array, size, max)
       }
     }
 
-    function heapify(array,size,i){
-      let max=i;
-      let left=2*i+1;
-      let right=2*i+2;
-
-      if (left<size&&array[left]>array[max])
-        max=left;
-
-      if(right<size&&array[right]>array[max])
-        max=right;
-
-      if(max!==i){
-        timer.current++;
-        looper(i,max)
-
-        let temp=array[i];
-        array[i]=array[max];
-        array[max]=temp
-
-        heapify(array, size,max)
-      }
-    }
-    
 
   }
 
@@ -293,7 +306,9 @@ function App() {
     }
     setHelpIndex({ num1: -1, num2: -1, color: 'blue', start: -1, end: -1 })
     setColumnArray(array);
-    timer.current = -1
+    timer.current = -1;
+    looper(-2);
+
   }
 
   function randomIntBetween(min, max) {
