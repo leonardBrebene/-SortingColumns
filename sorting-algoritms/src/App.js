@@ -95,6 +95,19 @@ function App() {
     }
   }
 
+  function looper1(first, second, bool, start, end, mergeValue) {
+    setTimeout(() => {
+      let color = 'turquoise'
+      if (bool === true) {
+        color = "black" //set the color of help index if bool=true then this is a pivot and color the pivot black
+      }
+
+      setHelpIndex({ num1: first, num2: second, color: color, start: start, end: end, mergeValue: mergeValue });
+    }, 25 * timer.current);
+    
+  }
+
+
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -149,32 +162,33 @@ function App() {
     checkIfFunctionRunning();
     let columnarray = aCopyOfColumnArray();
 
-    quickSort1(columnarray, 0, columnarray.length - 1)
+    quicksort(columnarray, 0, columnarray.length - 1); //call the function
+    looper1(-1, -1, true);
 
-    function quickSort1(array, start, end) {
+     function quicksort(array, start, end) {
       if (start >= end) {
         return;
       }
 
       let index = partition(array, start, end);
-      quickSort1(array, start, index - 1);
-      quickSort1(array, index + 1, end);
+      quicksort(array, start, index - 1);
+      quicksort(array, index + 1, end);
     }
 
     if (timer.current > 0) {
       timer.current++
-      looper(-1, -1, true)
+      looper1(-1, -1, true)
     }  //when everything finishes rerun loop to erase black and turquoise column
 
     function partition(array, start, end) {
       timer.current++;
-      looper(-1, -1, 'turquoise', start, end) //set the partition array with dodgerblue
+      looper1(-1, -1, 'turquoise', start, end) //set the partition array with dodgerblue
 
       let pivotIndex = start;
       let pivotValue = array[end];
       for (let i = start; i < end; i++) {
         timer.current++;
-        looper(i, i, false)
+        looper1(i, i, false)
         if (array[i] < pivotValue) {
           swap(array, pivotIndex, i, false);
           pivotIndex++;
@@ -190,7 +204,7 @@ function App() {
       array[second] = k;
 
       timer.current++;
-      looper(first, second, bool)
+      looper1(first, second, bool)
     }
   }
 
@@ -242,7 +256,7 @@ function App() {
       });
 
       timer.current++;
-      looper(smallestIndex, smallestIndex, false, smallestIndex, biggestIndex, -1);  //color the working array
+      looper1(smallestIndex, smallestIndex, false, smallestIndex, biggestIndex, -1);  //color the working array
 
       array.forEach((element) => {   //resettig the index of the array according their values
         element['index'] = smallestIndex;
@@ -251,11 +265,11 @@ function App() {
 
       array.forEach(element => {
         timer.current++;
-        looper(element['index'], element['index'], false, smallestIndex, biggestIndex, element['value']);
+        looper1(element['index'], element['index'], false, smallestIndex, biggestIndex, element['value']);
 
         if (element['index'] === numberOfColumns - 1) {
           timer.current++;
-          looper(-1, -1, false, smallestIndex, biggestIndex, element['value']);  //call loop for the last time to color the last element blue 
+          looper1(-1, -1, false, smallestIndex, biggestIndex, element['value']);  //call loop for the last time to color the last element blue 
         }
       });
 
@@ -282,7 +296,7 @@ function App() {
 
       for (let i = size - 1; i >= 0; i--) {
         timer.current++;
-        looper(0, i)
+        looper1(0, i)
 
         let temp = array[0];
         array[0] = array[i];
@@ -293,7 +307,7 @@ function App() {
       }
 
       timer.current++;
-      looper(-1, -1);
+      looper1(-1, -1);
     }
 
     function heapify(array, size, i) {
@@ -309,7 +323,7 @@ function App() {
 
       if (max !== i) {
         timer.current++;
-        looper(i, max)
+        looper1(i, max)
 
         let temp = array[i];
         array[i] = array[max];
