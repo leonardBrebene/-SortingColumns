@@ -7,12 +7,13 @@ function App() {
 
   const [l, setl] = useSomething('firstvalue', '');
   const [columnArray, setColumnArray] = useState([]);
-  const [numberOfColumns, setNumberColumns] = useState(50);
-  const [tempNum, setTempNum] = useState(50);
+  const [numberOfColumns, setNumberColumns] = useState(25);
+  const [tempNum, setTempNum] = useState(25);
   const [helpIndex, setHelpIndex] = useState({ num1: -1, num2: -1, color: 'turquoise', start: -1, end: -1, mergeValue: 0 });
   const lastIndex = useRef({ num1: -1, num2: -1, color: 'blue', start: -1, end: -1 });
   const pivotIndex = useRef(-1);
   const timer = useRef(-1);
+  const stoper = useRef(false)
 
 
 
@@ -32,6 +33,7 @@ function App() {
   }, [numberOfColumns])
 
   useEffect(() => {
+
     let array = columnArray;   //swap elements of columnArray
     let k = array[helpIndex['num1']];
     array[helpIndex['num1']] = array[helpIndex['num2']];
@@ -79,25 +81,51 @@ function App() {
 
   async function looper(first, second, bool, start, end, mergeValue) {
 
-    //setTimeout(() => {
-    await sleep(1000)
     let color = 'turquoise'
     if (bool === true) {
       color = "black" //set the color of help index if bool=true then this is a pivot and color the pivot black
     }
 
-    setHelpIndex({ num1: first, num2: second, color: color, start: start, end: end, mergeValue: mergeValue });
-    //}, 30 * timer.current);
-
+    if (stoper.current === true) {
+      await sleep(100)
+        .then(setHelpIndex({ num1: first, num2: second, color: color, start: start, end: end, mergeValue: mergeValue }));
+    }
+    else {
+      setHelpIndex({ num1: -1, num2: -1 })
+    }
   }
 
- async function sleep(ms) {
+  function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  function Bubble(e) {
+  function checkIfFunctionRunning(){
+    if (stoper.current === false) {
+      stoper.current = true;
+    }
+    else stoper.current = false;
+  }
+
+  function aCopyOfColumnArray(){
+    return JSON.parse(JSON.stringify(columnArray))
+  }
+
+  function stopTimer(e) {
     e.preventDefault();
-    let columnarray = JSON.parse(JSON.stringify(columnArray));
+    console.log('a fost apelat stop timer')
+    stoper.current = false;
+  }
+
+  async function parametersNededToBeChanged(first, second, bool, start, end, mergeValue){
+    if (stoper.current === true) {
+      await looper(first, second, bool, start, end, mergeValue);
+    }
+  }
+
+  async function Bubble(e) {
+    e.preventDefault();
+    checkIfFunctionRunning();
+    let columnarray = aCopyOfColumnArray();
 
     for (let i = numberOfColumns; i > -1; i--) {
       for (let j = 0; j < i; j++) {
@@ -107,19 +135,19 @@ function App() {
           columnarray[j] = columnarray[j + 1];
           columnarray[j + 1] = k;
 
-          timer.current++;
-          looper(j, j + 1, false);
+          await parametersNededToBeChanged(j, j + 1);
         }
         if (i === 1) { //when it finishes the loop erase the color of las columns
-          looper(-1, -1, false)
+          await looper(-1, -1)
         }
       }
     }
   }
 
-  function quickSort(e) {
+   function quickSort(e) {
     e.preventDefault();
-    let columnarray = JSON.parse(JSON.stringify(columnArray));
+    checkIfFunctionRunning();
+    let columnarray = aCopyOfColumnArray();
 
     quickSort1(columnarray, 0, columnarray.length - 1)
 
@@ -304,6 +332,7 @@ function App() {
     for (let i = 0; i < numberOfColumns; i++) {
       array.push(randomIntBetween(1, 100))
     }
+
     setHelpIndex({ num1: -1, num2: -1, color: 'blue', start: -1, end: -1 })
     setColumnArray(array);
     timer.current = -1;
@@ -321,16 +350,18 @@ function App() {
       hello world <div className='arrayBar'> l este{l}<br></br> {columnArray.length - 1}</div>  <p />
 
       <button onClick={getArray}>Reset values</button >
+      <button onClick={stopTimer}>Stop animation</button>
       <form className='form-control' >
         <label>Set number of columns</label>
         <input type="text" id="numberOfColumns" value={tempNum} onChange={(e) => setTempNum(e.target.value)} />
         <button id="numberOfColumnsButton" type="submit" onClick={setNumberOfColumns}  >Set</button>
       </form>
 
-      <button onClick={Bubble}>Bubblesor </button>
-      <button onClick={quickSort}>quickSort </button>
-      <button onClick={mergesort}>mergesort </button>
-      <button onClick={heapSort}>heapSort</button>
+      <button onClick={Bubble}>Bubble sort </button>
+      <button onClick={quickSort}>Quick sort </button>
+      <button onClick={mergesort}>Merge sort </button>
+      <button onClick={heapSort}>Heap sort</button>
+
       <br></br>
 
       <div className='arrayBarContainer'>
