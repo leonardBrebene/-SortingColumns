@@ -7,17 +7,14 @@ function App() {
 
   const [l, setl] = useSomething('firstvalue', '');
   const [columnArray, setColumnArray] = useState([]);
-  const [numberOfColumns, setNumberColumns] = useState(25);
-  const [tempNum, setTempNum] = useState(25);
+  const [numberOfColumns, setNumberColumns] = useState(50);
+  const [tempNum, setTempNum] = useState(50);
   const [helpIndex, setHelpIndex] = useState({ num1: -1, num2: -1, color: 'turquoise', start: -1, end: -1, mergeValue: 0 });
   const lastIndex = useRef({ num1: -1, num2: -1, color: 'blue', start: -1, end: -1 });
-  const pivotIndex = useRef(-1);
-  const timer = useRef(-1);
   const stoper = useRef(false)
 
-
-
   useEffect(() => {
+    stoper.current=false
     const array = [];
     for (let i = 0; i < numberOfColumns; i++) {
       array.push(randomIntBetween(1, 100))
@@ -26,10 +23,6 @@ function App() {
 
     setHelpIndex({ num1: -1, num2: -1, color: 'blue', start: -1, end: -1 })
     lastIndex.current = { num1: -1, num2: -1, color: 'blue', };
-    pivotIndex.current = -1;
-    timer.current = -1
-
-
   }, [numberOfColumns])
 
   useEffect(() => {
@@ -43,23 +36,18 @@ function App() {
       array[helpIndex['num2']] = k; //if there is negative mergevalue swap elements 
     }
 
-    if (helpIndex['end'] > 0) {  //color the working array dodgerblue
-      for (let i = helpIndex['start']; i <= helpIndex['end']; i++) {
-        const k = document.getElementById(i);
-        k.style.backgroundColor = 'dodgerblue'
-      }
-    }
-
-    if (helpIndex['color'] === 'black' && pivotIndex.current >= 0) {  //erase the last pivot 
-      const eraser = document.getElementById(pivotIndex.current);
-      eraser.style.backgroundColor = 'blue';
-    }
-
     if (lastIndex.current.num2 >= 0) {  //erasing the columns colored turqoise
       const eraser = document.getElementById(lastIndex.current.num1);
       const eraser2 = document.getElementById(lastIndex.current.num2);
       eraser.style.backgroundColor = 'blue';
       eraser2.style.backgroundColor = 'blue';
+    }
+
+    if (helpIndex['end'] > 0) {  //color the working array dodgerblue
+      for (let i = helpIndex['start']; i <= helpIndex['end']; i++) {
+        const k = document.getElementById(i);
+        k.style.backgroundColor = helpIndex['color'];
+      }
     }
 
     if (helpIndex['num1'] >= 0) {
@@ -71,56 +59,33 @@ function App() {
 
     lastIndex.current = helpIndex; //store de helpIndex to recolor de swapping elements next time when function si called
 
-    if (helpIndex['color'] === 'black') { //store the index of the pivot so that it will be recolored next time
-      pivotIndex.current = helpIndex['num1'];
-      lastIndex.current.num1 = 0
-    }
-
   }, [helpIndex, columnArray])
 
 
-  async function looper(first, second, bool, start, end, mergeValue) {
+  async function looper(first, second, color, start, end, mergeValue) {
 
-    let color = 'turquoise'
-    if (bool === true) {
-      color = "black" //set the color of help index if bool=true then this is a pivot and color the pivot black
+    if (color !== 'dodgerblue' && color !== 'blue') {
+      color = "turquoise"
     }
 
     if (stoper.current === true) {
-      await sleep(100)
+      await sleep(30)
         .then(setHelpIndex({ num1: first, num2: second, color: color, start: start, end: end, mergeValue: mergeValue }));
     }
     else {
-      setHelpIndex({ num1: -1, num2: -1 })
+      setHelpIndex({ num1: -1, num2: -1,color: 'blue',start: '0', end: columnArray.length-1  })
     }
   }
-
-  function looper1(first, second, bool, start, end, mergeValue) {
-    setTimeout(() => {
-      let color = 'turquoise'
-      if (bool === true) {
-        color = "black" //set the color of help index if bool=true then this is a pivot and color the pivot black
-      }
-
-      setHelpIndex({ num1: first, num2: second, color: color, start: start, end: end, mergeValue: mergeValue });
-    }, 25 * timer.current);
-    
-  }
-
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  function checkIfFunctionRunning(){
+  function checkIfFunctionRunning() {
     if (stoper.current === false) {
       stoper.current = true;
     }
     else stoper.current = false;
-  }
-
-  function aCopyOfColumnArray(){
-    return JSON.parse(JSON.stringify(columnArray))
   }
 
   function stopTimer(e) {
@@ -129,16 +94,16 @@ function App() {
     stoper.current = false;
   }
 
-  async function parametersNededToBeChanged(first, second, bool, start, end, mergeValue){
+  async function parametersToBeChanged(first, second, color, start, end, mergeValue) {
     if (stoper.current === true) {
-      await looper(first, second, bool, start, end, mergeValue);
+      await looper(first, second, color, start, end, mergeValue);
     }
   }
 
   async function Bubble(e) {
     e.preventDefault();
     checkIfFunctionRunning();
-    let columnarray = aCopyOfColumnArray();
+    let columnarray = JSON.parse(JSON.stringify(columnArray));
 
     for (let i = numberOfColumns; i > -1; i--) {
       for (let j = 0; j < i; j++) {
@@ -148,7 +113,7 @@ function App() {
           columnarray[j] = columnarray[j + 1];
           columnarray[j + 1] = k;
 
-          await parametersNededToBeChanged(j, j + 1);
+          await parametersToBeChanged(j, j + 1);
         }
         if (i === 1) { //when it finishes the loop erase the color of las columns
           await looper(-1, -1)
@@ -157,68 +122,74 @@ function App() {
     }
   }
 
-   function quickSort(e) {
+  async function quickSort(e) {
     e.preventDefault();
     checkIfFunctionRunning();
-    let columnarray = aCopyOfColumnArray();
+    let columnarray = JSON.parse(JSON.stringify(columnArray));
+    await quicksort(columnarray, 0, columnarray.length - 1) //call the function
+    looper(-1, -1, true); //rerun the loop to color blue last changed elements
+    stoper.current = false; //function can be called again
 
-    quicksort(columnarray, 0, columnarray.length - 1); //call the function
-    looper1(-1, -1, true);
-
-     function quicksort(array, start, end) {
+    async function quicksort(array, start, end) {
       if (start >= end) {
         return;
       }
 
-      let index = partition(array, start, end);
-      quicksort(array, start, index - 1);
-      quicksort(array, index + 1, end);
+      let index = await partition(array, start, end);
+
+      // await Promise.all([
+      //   quicksort(array, start, index - 1),
+      //   quicksort(array, index + 1, end)])
+
+      await quicksort(array, start, index - 1);
+      await quicksort(array, index + 1, end);
     }
 
-    if (timer.current > 0) {
-      timer.current++
-      looper1(-1, -1, true)
-    }  //when everything finishes rerun loop to erase black and turquoise column
-
-    function partition(array, start, end) {
-      timer.current++;
-      looper1(-1, -1, 'turquoise', start, end) //set the partition array with dodgerblue
+    async function partition(array, start, end) {
 
       let pivotIndex = start;
       let pivotValue = array[end];
+
       for (let i = start; i < end; i++) {
-        timer.current++;
-        looper1(i, i, false)
+
         if (array[i] < pivotValue) {
-          swap(array, pivotIndex, i, false);
+          await parametersToBeChanged(-1, -1, 'dodgerblue', pivotIndex + 1, i) //color with dodgerblue columns from pivotindex to I
+          await swap(array, pivotIndex, i, false);
           pivotIndex++;
         }
+        await parametersToBeChanged(-1, -1, 'dodgerblue', pivotIndex + 1, i) //color with dodgerblue columns from pivotindex to I
+        await parametersToBeChanged(i, i)
       }
-      swap(array, pivotIndex, end, true)
+
+      await parametersToBeChanged(-1, -1, 'blue', pivotIndex, end) //color dodgerblue columns with blue
+
+      await swap(array, pivotIndex, end)
       return pivotIndex
     }
 
-    function swap(array, first, second, bool) { //bool true===color pivot with black
+    async function swap(array, first, second, color) {
       let k = array[first];
       array[first] = array[second];
       array[second] = k;
 
-      timer.current++;
-      looper1(first, second, bool)
+      await parametersToBeChanged(first, second, color)
     }
   }
 
-  function mergesort(e) {
+
+  async function mergesort(e) {
     e.preventDefault();
     let columnarray = JSON.parse(JSON.stringify(columnArray));
-
+    checkIfFunctionRunning();
     let indexColumnArray = columnarray.map((value, i) => {
       return value = { value: value, index: i }
     })
 
-    mergeSortTopDown(indexColumnArray) //call the function from below
+    await mergeSortTopDown(indexColumnArray) //call the function from below
+    looper(-1, -1, true); //rerun the loop to color blue last changed elements
+    stoper.current = false; //function can be called again
 
-    function mergeSortTopDown(indexColumnArray) {
+    async function mergeSortTopDown(indexColumnArray) {
       if (indexColumnArray.length <= 1) {
         return indexColumnArray;
       }
@@ -227,10 +198,10 @@ function App() {
       const left = indexColumnArray.slice(0, middle);
       const right = indexColumnArray.slice(middle)
 
-      return merge(mergeSortTopDown(left), mergeSortTopDown(right));
+      return merge(await mergeSortTopDown(left), await mergeSortTopDown(right));
     }
 
-    function merge(left, right) {
+    async function merge(left, right) {
       let array = [];
       let smallestIndex = 999;
       let biggestIndex = -1;
@@ -255,62 +226,58 @@ function App() {
         }
       });
 
-      timer.current++;
-      looper1(smallestIndex, smallestIndex, false, smallestIndex, biggestIndex, -1);  //color the working array
+      await parametersToBeChanged(smallestIndex, smallestIndex, 'blue', smallestIndex, biggestIndex, -1);  //color the working array
 
       array.forEach((element) => {   //resettig the index of the array according their values
         element['index'] = smallestIndex;
         smallestIndex++;
       });
 
-      array.forEach(element => {
-        timer.current++;
-        looper1(element['index'], element['index'], false, smallestIndex, biggestIndex, element['value']);
+      for(let i =0;i<array.length;i++){
+        await colorColumns(array[i])
+      }
+    
+      async function colorColumns(element) {
+        await parametersToBeChanged(element['index'], element['index'], false, smallestIndex, biggestIndex, element['value']); //color the overwrited element
 
         if (element['index'] === numberOfColumns - 1) {
-          timer.current++;
-          looper1(-1, -1, false, smallestIndex, biggestIndex, element['value']);  //call loop for the last time to color the last element blue 
+          await parametersToBeChanged(-1, -1, false, smallestIndex, biggestIndex, element['value']);  //call loop for the last time to color the last element blue 
         }
-      });
-
+      }
       return array;
     }
-
   }
 
-  function heapSort(e) {
-    console.log(e)
+ async function heapSort(e) {
 
     e.preventDefault();
+    checkIfFunctionRunning();
     let array = JSON.parse(JSON.stringify(columnArray));
-    console.log(array.length)
-    heapsort(array);
-    console.log(array)
+    await heapsort(array);
+    looper(-1, -1, true); //rerun the loop to color blue last changed elements
+    stoper.current = false; //function can be called again
 
-    function heapsort(array) {
+    async function heapsort(array) {
       let size = array.length
 
       for (let i = Math.floor(size / 2 - 1); i >= 0; i--) {
-        heapify(array, size, i)
+        await heapify(array, size, i)
       }
 
       for (let i = size - 1; i >= 0; i--) {
-        timer.current++;
-        looper1(0, i)
+        await parametersToBeChanged(0, i)
 
         let temp = array[0];
         array[0] = array[i];
         array[i] = temp;
-        //array.shift();
 
-        heapify(array, i, 0)
+        await heapify(array, i, 0)
       }
 
-      timer.current++;
-      looper1(-1, -1);
+      await parametersToBeChanged(-1, -1);
     }
 
-    function heapify(array, size, i) {
+   async function heapify(array, size, i) {
       let max = i;
       let left = 2 * i + 1;
       let right = 2 * i + 2;
@@ -322,23 +289,15 @@ function App() {
         max = right;
 
       if (max !== i) {
-        timer.current++;
-        looper1(i, max)
+        await parametersToBeChanged(i, max)
 
         let temp = array[i];
         array[i] = array[max];
         array[max] = temp
 
-        heapify(array, size, max)
+       await heapify(array, size, max)
       }
     }
-
-
-  }
-
-  function setNumberOfColumns(e) {
-    e.preventDefault();
-    setNumberColumns(tempNum);
   }
 
   function getArray() {
@@ -346,12 +305,8 @@ function App() {
     for (let i = 0; i < numberOfColumns; i++) {
       array.push(randomIntBetween(1, 100))
     }
-
-    setHelpIndex({ num1: -1, num2: -1, color: 'blue', start: -1, end: -1 })
+    stoper.current=false;
     setColumnArray(array);
-    timer.current = -1;
-    looper(-2);
-
   }
 
   function randomIntBetween(min, max) {
@@ -361,14 +316,13 @@ function App() {
 
   return (
     <div className="App">
-      hello world <div className='arrayBar'> l este{l}<br></br> {columnArray.length - 1}</div>  <p />
 
       <button onClick={getArray}>Reset values</button >
       <button onClick={stopTimer}>Stop animation</button>
       <form className='form-control' >
         <label>Set number of columns</label>
         <input type="text" id="numberOfColumns" value={tempNum} onChange={(e) => setTempNum(e.target.value)} />
-        <button id="numberOfColumnsButton" type="submit" onClick={setNumberOfColumns}  >Set</button>
+        <button id="numberOfColumnsButton" type="submit" onClick={(e)=>{e.preventDefault() ;setNumberColumns(tempNum)}}  >Set</button>
       </form>
 
       <button onClick={Bubble}>Bubble sort </button>
